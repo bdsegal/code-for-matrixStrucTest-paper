@@ -1,4 +1,4 @@
-## Code for reproducing simulations and analyses in "Test of Matrix Structure for Construct Validation" by Brian D. Segal, Thomas Braun, Michael Elliott, and Hui Jiang. Submitted.
+## Code for reproducing simulations and analyses in "Tests of Matrix Structure for Construct Validation" by Brian D. Segal, Thomas Braun, Michael Elliott, and Hui Jiang. Submitted.
 
 The accompanying R package is at [https://github.com/bdsegal/matrixTest](https://github.com/bdsegal/matrixTest).
 
