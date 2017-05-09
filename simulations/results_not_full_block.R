@@ -167,7 +167,7 @@ ggplot(aes(x = value), data = simResultsM)+
                      labels = c(0, 0.5, 1))+
   labs(x = "p-value")
 
-ggsave(file.path(paperPath, "simNotFullBlockHist.png"))
+ggsave(file.path(paperPlotPath, "simNotFullBlockHist.png"))
 
 # power
 alpha <- c(0.01, 0.05)
@@ -236,7 +236,7 @@ ggplot(aes(x = value), data = simResultsCFAM)+
   geom_histogram()+
   facet_grid(p~ n)+
   theme_bw(18)
-ggsave(file.path(paperPath, "simNotFullBlock_cfi_tfi.png"))
+ggsave(file.path(paperPlotPath, "simNotFullBlock_cfi_tfi.png"))
 
 group_by(simResultsCFAM, p, n) %>%
   summarize(
@@ -265,9 +265,10 @@ simAll <- rbind(simAll, simResultsX2PearsonM)
 simAll <- rbind(simAll, simResultsCFAM[, which(colnames(simResultsCFAM) != "p")])
 simAll$stat <- factor(simAll$stat, levels = c("Gamma[norm]-pval", "X[2]-pval", "CFI", "TLI"))
 
+dev.new(width = 8, height = 5.5)
 ggplot(aes(x = value), data = simAll[which(simAll$stat != "TLI"), ])+
   geom_histogram(binwidth = .075)+
   facet_grid(stat ~ n, labeller = labeller(.rows = label_parsed), scale = "free_y")+
   theme_bw(18)+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(file.path(paperPath, "simNotFullBlock_hist_all.png"))
+ggsave(file.path(paperPlotPath, "simNotFullBlock_hist_all.png"))

@@ -264,6 +264,7 @@ simAll <- rbind(simAll, simResultsX2PearsonM)
 simAll <- rbind(simAll, simResultsCFAM[, which(colnames(simResultsCFAM) != "p")])
 simAll$stat <- factor(simAll$stat, levels = c("Gamma[norm]-pval", "X[2]-pval", "CFI", "TLI"))
 
+dev.new(width = 7, height = 5.5)
 ggplot(aes(x = value), data = simAll[which(simAll$stat != "TLI"), ])+
   geom_histogram(binwidth = .075)+
   facet_grid(stat ~ n, labeller = labeller(.rows = label_parsed), scale = "free_y")+
