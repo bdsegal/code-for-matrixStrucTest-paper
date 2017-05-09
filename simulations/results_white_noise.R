@@ -121,6 +121,7 @@ ggplot(aes(x=x, y=y, fill=abs(value)), data=Amelt)+
 	geom_tile()+
 	theme_bw(30)+
   scale_fill_gradient2(space="Lab", name = "", lim = c(0, 1))+
+  labs(x="", y="")+
   scale_x_discrete(breaks = "")+
   scale_y_discrete(breaks = "")+
 	theme(axis.text.x = element_text(angle = 90, vjust = .35,hjust=1))+
