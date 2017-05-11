@@ -41,6 +41,17 @@ itemNames <- tolower(mapply(function(nam, t) {substr(nam, 4, t - 1)},
                             colnames(subBig5), end))
 colnames(subBig5) <- gsub("_", "", itemNames)
 
+# reverse code items ----------------------------------------------------------
+# See https://hrs.isr.umich.edu/sites/default/files/biblio/HRS2006-2010SAQdoc.pdf
+revCode <- function(x) {
+  (x==4)*1 + (x==3)*2 + (x==2)*3 + (x==1)*4
+}
+
+subBig5$c <- revCode(subBig5$c)
+subBig5$q <- revCode(subBig5$q)
+subBig5$v <- revCode(subBig5$v)
+subBig5$x <- revCode(subBig5$x)
+
 # missingness -----------------------------------------------------------------
 
 barplot(apply(subBig5,2,function(x){mean(is.na(x))}), main="percent missing")
@@ -64,27 +75,30 @@ nrow(subBig5noNA) / nrow(sub)
 A <- abs(cor(subBig5, use = "complete.obs", method = "spearman"))
 
 # define blocks
+neuro <- which(colnames(A) %in% c("d", "h", "l","q"))
 extro <- which(colnames(A) %in% c("a","f","j","u","z2"))
 agree <- which(colnames(A) %in% c("b","g","k","p","y"))
-cons <- which(colnames(A) %in% c("c","e","i","n","r", "v", "x", "z", "z5", "z6"))
-neuro <- which(colnames(A) %in% c("d", "h", "l","q"))
 open <- which(colnames(A) %in% c("m","o","s","t","w","z3","z4"))
+cons <- which(colnames(A) %in% c("c","e","i","n","r", "v", "x", "z", "z5", "z6"))
 
-groupList <- list(neuro, extro, agree, open, cons)
+groupList <- list(neuro = neuro, extro = extro, agree = agree, open = open, cons = cons)
 
 out <- matrixTest(A = A, group_list = groupList, B = 10000, absolute = TRUE)
+out
+#     Test of matrix structure   
 
-cbind(out$Gamma0, out$p_overall_two_sided)
-#           [,1]      [,2]
-# [1,] 0.4037821 9.999e-05
+# 10,000 Monte Carlo resamples, two-sided p-values
 
-cbind(out$Gamma0k, out$p_multi_two_sided)
-#        [,1]       [,2]
-# 1 0.5468220 0.00029997
-# 2 0.3693499 0.00439956
-# 3 0.4884832 0.00049995
-# 4 0.5012147 0.00039996
-# 5 0.2064104 0.11928807
+# Overall Hubert's Gamma
+# Gamma0 = 0.404, p-val < 1e-04
+
+# Block-specific Hubert's Gamma
+#       Gamma0   pval
+# neuro  0.547  2e-04
+# extro  0.369 0.0025
+# agree  0.488  3e-04
+# open   0.501  2e-04
+# cons   0.206  0.111
 
 dev.new(width = 6, height = 4)
 qplot(x=out$Gamma_overall, geom="histogram")+

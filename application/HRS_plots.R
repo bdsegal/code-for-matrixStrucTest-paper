@@ -38,6 +38,17 @@ itemNames <- tolower(mapply(function(nam, t) {substr(nam, 4, t - 1)},
                             colnames(subBig5), end))
 colnames(subBig5) <- gsub("_", "", itemNames)
 
+# reverse code items ----------------------------------------------------------
+# See https://hrs.isr.umich.edu/sites/default/files/biblio/HRS2006-2010SAQdoc.pdf
+revCode <- function(x) {
+  (x==4)*1 + (x==3)*2 + (x==2)*3 + (x==1)*4
+}
+
+subBig5$c <- revCode(subBig5$c)
+subBig5$q <- revCode(subBig5$q)
+subBig5$v <- revCode(subBig5$v)
+subBig5$x <- revCode(subBig5$x)
+
 # get A matrix ----------------------------------------------------------------
 A <- abs(cor(subBig5, use = "complete.obs", method = "spearman"))
 diag(A) <- NA
