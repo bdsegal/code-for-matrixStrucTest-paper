@@ -1,1 +1,3 @@
 *.Rdata
+*.Rout
+simulations/old/*

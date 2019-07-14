@@ -2,7 +2,7 @@
 
 library(MASS)
 library(lavaan)
-library(matrixTest)
+library(matrixStrucTest)
 source("simFunctions.R")
 
 # setup simulation quantities
@@ -71,7 +71,10 @@ simResultsG2 <- array(NA, dim = c(length(n), (1+length(pk)), N),
 
 GOFstats <- c("chisq", "df", "pvalue", 
               "chisq.scaled", "df.scaled", "pvalue.scaled",
-              "cfi", "tli")
+              "cfi", "tli", 
+              "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue",
+              "rmsea.scaled", "rmsea.ci.lower.scaled", "rmsea.ci.upper.scaled", "rmsea.pvalue.scaled",
+              "rmsea.robust", "rmsea.ci.lower.robust", "rmsea.ci.upper.robust", "rmsea.pvalue.robust")
 
 simResultsCFA <- array(NA, dim = c(length(n), length(GOFstats), N),
   dimnames = list(n = n, 
@@ -115,22 +118,17 @@ for (ni in 1:4){
       # Make the covariance matrix positive definite
       sigma <- t(sigma) %*% sigma
 
-      # True correlation matrix
-      s <- diag(diag(sigma)^(-1/2))
-      sigmaCor <- s %*% sigma %*% s
-
       # generate data and get correlation matrix
       y <- mvrnorm(n = n[ni], mu = mu, Sigma = sigma)
       yCat <- ordFun(y)
       A <- cor(yCat, method = "spearman")
 
       # permutation test
-      out <- matrixTest(A, group_list, B = B, absolute = TRUE)
+      out <- matrixStrucTest(A, group_list, B = B, absolute = TRUE)
       simResultsT1[ni, , iter] <- c(out$pt_overall_one_sided, out$pt_multi_one_sided)
       simResultsT2[ni, , iter] <- c(out$pt_overall_two_sided, out$pt_multi_two_sided)
       simResultsG1[ni, , iter] <- c(out$pG_overall_one_sided, out$pG_multi_one_sided)
       simResultsG2[ni, , iter] <- c(out$pG_overall_two_sided, out$pG_multi_two_sided)
-
 
       # prep data for pattern hypothesis test and CFA
       colnames(yCat) <- letters2[1:ncol(yCat)]
@@ -149,10 +147,10 @@ for (ni in 1:4){
       # make sure output is not retained into next round, in case next iteration fails
       rm(out)
     })
+    
+    save(simResultsT1, simResultsT2, simResultsG1, simResultsG2,
+         simResultsX2Pearson, simResultsX2Spearman, simResultsCFA,
+         file = "simNotFullBlock_1000_tG.Rdata")
   }
 }
 
-save(sigma0, sigma, sigmaCor,
-     simResultsT1, simResultsT2, simResultsG1, simResultsG2,
-     simResultsX2Pearson, simResultsX2Spearman, simResultsCFA,
-     file = "simNotFullBlock_1000_tG.Rdata")

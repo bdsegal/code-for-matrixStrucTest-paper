@@ -3,7 +3,7 @@
 library(data.table)
 library(ggplot2)
 library(reshape2)
-library(matrixTest)
+library(matrixStrucTest)
 
 # setup paths
 if(length(grep("bdsegal",getwd()))>0 ){

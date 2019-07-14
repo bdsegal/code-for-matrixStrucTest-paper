@@ -1,4 +1,3 @@
-
 library(ggplot2)
 library(reshape2)
 library(dplyr)
@@ -11,17 +10,25 @@ if(length(grep("bdsegal",getwd()))>0 ){
 }
 
 source("simFunctions.R")
-paperPath <- file.path(computer, "Dropbox/Research/PermTest/MatrixBlocksTest/paper/constrValid")
-paperPlotPath <- file.path(computer,
-   "Dropbox/Research/PermTest/MatrixBlocksTest/paper/matrix_test_paper/plots")
-
-load("simConstant_1000_tG.Rdata")
+paperPath <- file.path(computer, 
+  "Dropbox/Research/PermTest/MatrixBlocksTest/paper/matrix_test_paper_psychometrika")
 
 # plot correlation matrices ---------------------------------------------------
 pk <- c(5, 7, 9, 11)
 pkCum <- cumsum(pk)
 pkCumRev <- rev(cumsum(rev(pk)))
 mu <- rep(0, sum(pk)) 
+
+# off-diagonal corelation
+a <- 0.5
+sigmaCor <- array(rep(a, sum(pk)^2), dim = c(sum(pk), sum(pk)))
+diag(sigmaCor) <- 1 
+
+# randomly generated standard deviations
+set.seed(1)
+s <- diag(abs(rnorm(n = sum(pk), mean = 1, sd = 1)))
+# True covariance matrix
+sigma <- s %*% sigmaCor %*% s
 
 # n = 10
 y <- mvrnorm(n = 10, mu = mu, Sigma = sigma)
@@ -62,7 +69,7 @@ ggplot(aes(x=x, y=y, fill=abs(value)), data=Amelt)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=0.5, size=1)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[3]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)+
 	geom_segment(x=pkCum[4]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)
-ggsave(file.path(paperPlotPath,"simConstant10.png"))
+ggsave(file.path(paperPath,"simConstant10.png"))
 
 # n = 100
 y <- mvrnorm(n = 100, mu = mu, Sigma = sigma)
@@ -103,7 +110,7 @@ ggplot(aes(x=x, y=y, fill=abs(value)), data=Amelt)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=0.5, size=1)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[3]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)+
 	geom_segment(x=pkCum[4]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)
-ggsave(file.path(paperPlotPath,"simConstant100.png"))
+ggsave(file.path(paperPath,"simConstant100.png"))
 
 # n = 1000
 y <- mvrnorm(n = 1000, mu = mu, Sigma = sigma)
@@ -144,32 +151,19 @@ ggplot(aes(x=x, y=y, fill=abs(value)), data=Amelt)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=0.5, size=1)+
 	geom_segment(x=pkCum[3]+0.5,xend=pkCum[3]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)+
 	geom_segment(x=pkCum[4]+0.5,xend=pkCum[4]+0.5,y=0.5,yend=pkCumRev[4]+0.5, size=1)
-ggsave(file.path(paperPlotPath,"simConstant1000.png"))
+ggsave(file.path(paperPath,"simConstant1000.png"))
 
 # plots simulation results ----------------------------------------------------
 
 load("simConstant_1000_tG.Rdata")
 
-# simResults <- simResultsT1
-# simResults <- simResultsT2
-# simResults <- simResultsG1
 simResults <- simResultsG2
 
 simResultsM <- melt(simResults)
 simResultsM$n <- factor(simResultsM$n, labels = paste("n = ", c(10, 100, "1,000"),sep = ""))
 simResultsM$k <- factor(simResultsM$p, labels = c("Overall", paste("k = ", 1:4, sep="")))
 
-ggplot(aes(x = value), data = simResultsM)+
-  geom_histogram(binwidth = 0.05)+
-  facet_grid(k ~ n)+
-  theme_bw(18)+
-  scale_x_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1), 
-                     labels = c(0, 0.25, 0.5, 0.75, 1))+
-  labs(x = "p-value")
-ggsave(file.path(paperPath, "simConstantHist.png"))
-
-# false alarm rate
-
+# false alarm rate with gamma_norm: table
 alpha <- c(0.01, 0.05)
 falseAlarm <- array(dim = c(3, 2, 2),
   dimnames = list(n = c(10, 100, 1000),
@@ -190,74 +184,49 @@ for (n in 1:3){
   }
 }
 signif(falseAlarm, 2)
-# , , alpha = 0.01
 
-#       block
-# n      Overall Block-specific FWER
-#   10     0.016              0.0092
-#   100    0.018              0.0120
-#   1000   0.011              0.0110
+# RMSEA: plot and table
+simResultsCFArmsea <- melt(simResultsCFA[, "rmsea", ])
+simResultsCFArmsea$n <- factor(simResultsCFArmsea$n, labels = paste("n = ", c(10, 100, "1,000"), sep = ""))
+simResultsCFArmsea$p <- "RMSEA"
 
-# , , alpha = 0.05
-
-#       block
-# n      Overall Block-specific FWER
-#   10     0.062               0.060
-#   100    0.061               0.051
-#   1000   0.057               0.047
-
-# X2 with Pearson correlation
-simResultsX2PearsonM <- melt(simResultsX2Pearson[, "pval", ])
-simResultsX2PearsonM$n <- factor(simResultsX2PearsonM$n, labels = paste("n = ", c(10, 100, "1,000"),sep = ""))
-ggplot(aes(x = value), data = simResultsX2PearsonM)+
+dev.new(height = 3, width = 8)
+ggplot(aes(x = value), data = simResultsCFArmsea)+
   geom_histogram()+
-  facet_grid( ~ n)+
-  theme_bw(18)+
-  labs(x = "p-value")+
-  scale_x_continuous(labels = c(0, 0.25, 0.5, 0.75, 1), breaks = c(0, 0.25, 0.5, 0.75, 1))
-  # geom_vline(xintercept = log(c(0.01, 0.05)), color = "red", linetype = "dashed")
+  facet_grid(~ n, scales = "free")+
+  theme_bw(18) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Count", x = "")
+ggsave(file.path(paperPath, "simConstant_rmsea.png"))
 
-# X2 with Spearman's correlation
-simResultsX2SpearmanM <- melt(simResultsX2Spearman[, "pval", ])
-simResultsX2SpearmanM$n <- factor(simResultsX2SpearmanM$n, labels = paste("n = ", c(10, 100, "1,000"),sep = ""))
-ggplot(aes(x = value), data = simResultsX2SpearmanM)+
-  geom_histogram()+
-  facet_grid( ~ n)+
-  theme_bw(18)+
-  labs(x = "p-value")+
-  scale_x_continuous(labels = c(0, 0.25, 0.5, 0.75, 1), breaks = c(0, 0.25, 0.5, 0.75, 1))
-  # geom_vline(xintercept = log(c(0.01, 0.05)), color = "red", linetype = "dashed")
+group_by(simResultsCFArmsea, n) %>%
+  summarize(
+    alpha05 = mean(value < 0.05, na.rm = TRUE),
+    alpha07 = mean(value < 0.07, na.rm = TRUE),
+    alpha1 = mean(value < 0.1, na.rm = TRUE))
 
-
-# CFA: CFI and TLI
+# CFA: CFI and TLI: table
 simResultsCFAM <- melt(simResultsCFA[, c("cfi", "tli"), ])
 simResultsCFAM$n <- factor(simResultsCFAM$n, labels = paste("n = ", c(10, 100, "1,000"),sep = ""))
-simResultsCFAM$p <- factor(simResultsCFAM$p, labels = c("CFI", "TLI"))
-dev.new(height = 5, width = 8)
-ggplot(aes(x = value), data = simResultsCFAM)+
-  geom_histogram()+
-  facet_grid(p~ n)+
-  theme_bw(18)
-ggsave(file.path(paperPlotPath, "simConst_cfi_tfi.png"))
+simResultsCFAM$stat <- factor(simResultsCFAM$p, labels = c("CFI", "TLI"))
 
-group_by(simResultsCFAM, p, n) %>%
+group_by(simResultsCFAM, stat, n) %>%
   summarize(
     alpha95 = mean(value >= 0.95, na.rm = TRUE),
     alpha90 = mean(value >= 0.9, na.rm = TRUE),
     alpha80 = mean(value >= 0.8, na.rm = TRUE))
-#        p         n   alpha95   alpha90   alpha80
-#   (fctr)    (fctr)     (dbl)     (dbl)     (dbl)
-# 1    CFI    n = 10 0.8866667 0.9233333 0.9766667
-# 2    CFI   n = 100 1.0000000 1.0000000 1.0000000
-# 3    CFI n = 1,000 1.0000000 1.0000000 1.0000000
-# 4    TLI    n = 10 0.8833333 0.9166667 0.9700000
-# 5    TLI   n = 100 1.0000000 1.0000000 1.0000000
-# 6    TLI n = 1,000 1.0000000 1.0000000 1.0000000
+
+# X2 with Pearson correlation
+simResultsX2PearsonM <- melt(simResultsX2Pearson[, "pval", ])
+simResultsX2PearsonM$n <- factor(simResultsX2PearsonM$n, labels = paste("n = ", c(10, 100, "1,000"), sep = ""))
+
+# X2 with Spearman's correlation
+simResultsX2SpearmanM <- melt(simResultsX2Spearman[, "pval", ])
+simResultsX2SpearmanM$n <- factor(simResultsX2SpearmanM$n, labels = paste("n = ", c(10, 100, "1,000"), sep = ""))
 
 # plot all together
 simResultsX2PearsonM$stat <- "X[2]-pval"
 simResultsM$stat <- "Gamma[norm]-pval"
-simResultsCFAM$stat <- simResultsCFAM$p
 
 simAll <- simResultsM[which(simResultsM$k == "Overall"),
                       which(colnames(simResultsM) %in% c("n", "iter", "value", "stat"))]
@@ -265,10 +234,11 @@ simAll <- rbind(simAll, simResultsX2PearsonM)
 simAll <- rbind(simAll, simResultsCFAM[, which(colnames(simResultsCFAM) != "p")])
 simAll$stat <- factor(simAll$stat, levels = c("Gamma[norm]-pval", "X[2]-pval", "CFI", "TLI"))
 
-dev.new(width = 7, height = 5.5)
+dev.new(width = 8, height = 5.5)
 ggplot(aes(x = value), data = simAll[which(simAll$stat != "TLI"), ])+
-  geom_histogram(binwidth = .075)+
+  geom_histogram(binwidth = 0.075)+
   facet_grid(stat ~ n, labeller = labeller(.rows = label_parsed), scale = "free_y")+
   theme_bw(18)+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(file.path(paperPlotPath, "simConst_hist_all.png"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "", y = "Count")
+ggsave(file.path(paperPath, "simConst_hist_all.png"))
