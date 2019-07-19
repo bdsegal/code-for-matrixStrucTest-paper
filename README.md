@@ -14,4 +14,4 @@ The accompanying R package is at [https://github.com/bdsegal/matrixStrucTest](ht
 
 ## References
 
-Segal, B. D., Braun, T., Gonzalez, R., and Elliott, M. R. (2019). Tests of matrix structure for construct validation. Psychometrika, 84(1), 65-83.
+Segal, B. D., Braun, T., Gonzalez, R., and Elliott, M. R. (2019). Tests of matrix structure for construct validation. Psychometrika, 84(1), 65-83. [doi.org/10.1007/s11336-018-9647-4](https://doi.org/10.1007/s11336-018-9647-4). (open-access [view-only version](https://rdcu.be/bb49z)).
