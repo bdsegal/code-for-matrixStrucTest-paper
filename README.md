@@ -1,6 +1,6 @@
 ## Code for reproducing simulations and analyses in Segal, et al. (2019).
 
-The accompanying R package is at [https://github.com/bdsegal/matrixStrucTest](https://github.com/bdsegal/matrixStrucTest).
+The accompanying R package is available on the [CRAN](https://cran.r-project.org/web/packages/matrixStrucTest/index.html} and at [https://github.com/bdsegal/matrixStrucTest](https://github.com/bdsegal/matrixStrucTest).
 
 ### Contents:
 
